@@ -101,6 +101,9 @@ class Reproductor():
 
         self.ventana.bind('<<SongFinished>>', lambda e: self.song_finished())
 
+        self.init_pygame()
+        self.check_pygame_events()
+
     def reproducir(self):
             if self.archivos_mp3:
                 self.ruta_archivo = self.archivos_mp3[self.indice_actual]
@@ -222,11 +225,8 @@ class Reproductor():
             if event.type == pygame.USEREVENT:
                 self.ventana.event_generate('<<SongFinished>>')
         self.ventana.after(100, self.check_pygame_events)
-        self.init_pygame()
-        self.check_pygame_events()
 
         self.ventana.mainloop()
-
 
 if __name__ == "__main__":
     Reproductor()
