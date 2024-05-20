@@ -36,7 +36,7 @@ class Reproductor():
         estilo.configure('TFrame', background=color_fondo) 
         estilo.configure('TLabel', background=color_fondo, foreground='white')
 
-        self.imagen_fondo = tk.PhotoImage(file="img.png")
+        self.imagen_fondo = tk.PhotoImage(file="Lab1\img.png")
         fondo_label = tk.Label(self.ventana, image=self.imagen_fondo)
         fondo_label.place(x=0, y=0, relwidth=1, relheight=1)
 
