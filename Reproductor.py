@@ -199,3 +199,34 @@ class Reproductor():
     def actualizar_volumen(self):
         volumen = float(self.control_volumen.get()) / 100
         mixer.music.set_volume(volumen)
+
+    def event_handler(self, event):
+        self.actualizar_volumen()
+
+    def seleccionar_carpeta(self):
+        ruta_carpeta = filedialog.askdirectory(title="Seleccionar carpeta de canciones")
+        if ruta_carpeta:
+            self.cargar_canciones(ruta_carpeta)
+
+    def song_finished(self):
+        if not self.detenido:
+            self.siguiente()
+
+    def init_pygame(self):
+        pygame.init()
+        pygame.mixer.init()
+        pygame.mixer.music.set_endevent(pygame.USEREVENT)
+
+    def check_pygame_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.USEREVENT:
+                self.ventana.event_generate('<<SongFinished>>')
+        self.ventana.after(100, self.check_pygame_events)
+        self.init_pygame()
+        self.check_pygame_events()
+
+        self.ventana.mainloop()
+
+
+if __name__ == "__main__":
+    Reproductor()
