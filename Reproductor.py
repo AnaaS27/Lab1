@@ -55,3 +55,57 @@ class Reproductor():
             self.indice_actual = (self.indice_actual + 1) % len(self.archivos_mp3)
             self.detenido = False
             self.reproducir()
+
+    def cargar_canciones(self, ruta_carpeta):
+        self.ruta_carpeta_seleccionada = ruta_carpeta
+        self.archivos_mp3 = [os.path.join(ruta_carpeta, archivo) for archivo in os.listdir(ruta_carpeta) if archivo.endswith(".mp3")]
+
+        if self.archivos_mp3:
+            self.lista_canciones.delete(*self.lista_canciones.get_children())
+            for index, archivo_mp3 in enumerate(self.archivos_mp3):
+                nombre_cancion = os.path.splitext(os.path.basename(archivo_mp3))[0]
+                duracion_cancion = self.obtener_duracion_cancion(archivo_mp3)
+                self.lista_canciones.insert("", tk.END, iid=index, text=nombre_cancion, values=(nombre_cancion, duracion_cancion))
+
+            audio = MP3(self.archivos_mp3[self.indice_actual])
+            self.duracion_total = int(audio.info.length)
+            self.barra_progreso.configure(maximum=self.duracion_total)
+
+    def clic_posicion(self, event):
+        if self.reproduciendo and self.duracion_total > 0:
+            progreso = event.x / self.barra_progreso.winfo_width()
+            nueva_posicion = progreso * self.duracion_total
+            mixer.music.set_pos(int(nueva_posicion))
+            self.actualizar_posicion()
+
+    def obtener_duracion_cancion(self, ruta_archivo):
+        audio = MP3(ruta_archivo)
+        duracion_segundos = int(audio.info.length)
+        minutos, segundos = divmod(duracion_segundos, 60)
+        return f"{minutos}:{segundos:02d}"
+
+    def format_time(self, milliseconds):
+        seconds = milliseconds // 1000
+        minutes = int(seconds // 60)
+        remaining_seconds = int(seconds % 60)
+        return f"{minutes:02d}:{remaining_seconds:02d}"
+
+    def actualizar_posicion(self):
+        self.barra_progreso['value'] = 0
+
+        if self.reproduciendo:
+            tiempo_actual = time.time()
+            tiempo_trascurrido = tiempo_actual - self.inicio_reproducciendo
+            posicion_actual = mixer.music.get_pos() / 1000
+
+            if self.duracion_total > 0:
+                porcentaje_completado = (posicion_actual / self.duracion_total) * 100
+                self.barra_progreso["value"] = porcentaje_completado
+                current_time = self.format_time(tiempo_trascurrido * 1000)
+                self.current_time_label.config(text=current_time)
+
+        self.ventana.after(100, self.actualizar_posicion)
+
+    def actualizar_volumen(self):
+        volumen = float(self.control_volumen.get()) / 100
+        mixer.music.set_volume(volumen)
